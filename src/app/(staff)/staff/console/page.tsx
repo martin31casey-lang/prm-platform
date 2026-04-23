@@ -197,7 +197,23 @@ export default function StaffConsolePage() {
           <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pacientes en Espera ({queue?.length || 0})</h3>
-                <button onClick={() => refetchQueue()} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Refrescar</button>
+                <div className="flex gap-4 items-center">
+                    <button 
+                        onClick={async () => {
+                            try {
+                                await api.telemedicine.joinQueue.mutateAsync({ specialty: "Clínica Médica" });
+                                alert("✅ Paciente simulado en la fila");
+                                refetchQueue();
+                            } catch (e) {
+                                alert("❌ Error al simular: " + (e as any).message);
+                            }
+                        }}
+                        className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline"
+                    >
+                        Simular Paciente
+                    </button>
+                    <button onClick={() => refetchQueue()} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Refrescar</button>
+                </div>
               </div>
               
               {queue?.length === 0 ? (
