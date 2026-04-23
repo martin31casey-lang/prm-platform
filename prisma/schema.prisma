@@ -211,6 +211,8 @@ model Session {
 
 model User {
     id            String    @id @default(cuid())
+    username      String?   @unique
+    password      String?   // Hash para staff login
     institutionId String?
     role          UserRole  @default(PATIENT)
     name          String?
@@ -222,6 +224,23 @@ model User {
     accounts      Account[]
     sessions      Session[]
     patient       Patient?
+    professional  Professional?
+}
+
+model Professional {
+    id            String    @id @default(cuid())
+    userId        String    @unique
+    licenseNumber String?   // Matrícula
+    specialty     String?
+    phoneNumber   String?
+    address       String?
+    
+    user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+
+    @@map("professionals")
 }
 
 model News {

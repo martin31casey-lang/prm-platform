@@ -19,7 +19,15 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. DOMINIO DE INSTITUCIÓN (Tenant)
+  // 2. PROTECCIÓN DE RUTAS DE STAFF
+  // Si intentan entrar a /staff/console sin estar en el portal corporativo o sin sesión
+  if (url.pathname.startsWith("/staff") && !url.pathname.includes("/login")) {
+    // Aquí podrías añadir un chequeo de sesión real si usaras auth() en el middleware,
+    // pero por ahora dejemos que NextAuth maneje la sesión y nosotros solo orientamos la URL.
+    // (Opcional: Si quieres forzar el login de staff, lo redirigimos aquí)
+  }
+
+  // 3. DOMINIO DE INSTITUCIÓN (Tenant)
   if (url.pathname === "/") {
     // Si NO es el dominio corporativo, REDIRIGIMOS (307) a la landing de la institución
     // Esto cambia la URL en el navegador y evita errores de historial.

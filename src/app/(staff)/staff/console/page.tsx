@@ -9,25 +9,32 @@ import {
   Clock,
   Activity,
   Stethoscope,
-  ChevronRight
+  ChevronRight,
+  Shield,
+  LogOut
 } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 
 export default function StaffConsolePage() {
-  const { data: queue, refetch: refetchQueue } = api.health.getWaitingQueue.useQuery(undefined, {
+  const { data: session, status } = useSession();
+  const doctorName = session?.user?.name || "Médico";
+
+  const { data: queue, refetch: refetchQueue } = api.telemedicine.getWaitingQueue.useQuery(undefined, {
     refetchInterval: 5000, 
   });
 
   // Query para ver si el médico tiene una llamada colgada/activa
-  const { data: resumedCall, refetch: refetchActiveCall } = api.health.getDoctorActiveCall.useQuery(
-    { doctorName: "Dr. Alejandro Sanz" },
+  const { data: resumedCall, refetch: refetchActiveCall } = api.telemedicine.getDoctorActiveCall.useQuery(
+    { doctorName: doctorName },
     { staleTime: 0 }
   );
 
-  const acceptCall = api.health.acceptCall.useMutation();
-  const endCall = api.health.endCall.useMutation();
+  const acceptCall = api.telemedicine.acceptCall.useMutation();
+  const endCall = api.telemedicine.endCall.useMutation();
   
   const [activeCall, setActiveCall] = useState<any>(null);
   const [jitsiLoaded, setJitsiLoaded] = useState(false);
+  const jitsiContainerRef = useRef<HTMLDivElement>(null);
 
   // Efecto para recuperar llamada activa al cargar/refrescar
   useEffect(() => {
@@ -36,27 +43,7 @@ export default function StaffConsolePage() {
     }
   }, [resumedCall]);
 
-  const handleAccept = async (callId: string) => {
-    const res = await acceptCall.mutateAsync({ 
-      callId, 
-      doctorName: "Dr. Alejandro Sanz" 
-    });
-    setActiveCall(res);
-  };
-
-  const handleEnd = async () => {
-    if (activeCall) {
-      await endCall.mutateAsync({ callId: activeCall.id });
-      setActiveCall(null);
-      await Promise.all([
-        refetchQueue(),
-        refetchActiveCall()
-      ]);
-    }
-  };
-
-  const jitsiContainerRef = useRef<HTMLDivElement>(null);
-
+  // Efecto para inicializar Jitsi
   useEffect(() => {
     if (activeCall && jitsiContainerRef.current && typeof window !== "undefined") {
       // @ts-ignore
@@ -73,7 +60,7 @@ export default function StaffConsolePage() {
         height: '100%',
         parentNode: jitsiContainerRef.current,
         userInfo: {
-          displayName: 'Dr. Alejandro Sanz'
+          displayName: doctorName
         },
         configOverwrite: {
           startWithAudioMuted: false,
@@ -106,6 +93,50 @@ export default function StaffConsolePage() {
       }
     }
   }, [activeCall, jitsiLoaded]);
+
+  const handleAccept = async (callId: string) => {
+    const res = await acceptCall.mutateAsync({ 
+      callId, 
+      doctorName: doctorName 
+    });
+    setActiveCall(res);
+  };
+
+  const handleEnd = async () => {
+    if (activeCall) {
+      await endCall.mutateAsync({ callId: activeCall.id });
+      setActiveCall(null);
+      await Promise.all([
+        refetchQueue(),
+        refetchActiveCall()
+      ]);
+    }
+  };
+
+  if (status === "loading") return <div className="p-10 text-center font-black uppercase tracking-widest text-slate-400">Verificando Credenciales...</div>;
+
+  if (session && session.user.role !== "DOCTOR" && session.user.role !== "ADMIN") {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl shadow-slate-200 border border-slate-100 p-12 text-center animate-in fade-in zoom-in duration-500">
+           <div className="h-20 w-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Shield className="w-10 h-10 text-red-500" />
+           </div>
+           <h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase mb-4">Acceso Restringido</h2>
+           <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
+             Tu cuenta no tiene permisos de <span className="text-red-500 font-bold uppercase tracking-widest text-[10px]">Staff Médico</span>. 
+             Contacta con el administrador si crees que esto es un error.
+           </p>
+           <button 
+             onClick={() => signOut({ callbackUrl: "/staff/login" })}
+             className="w-full py-4 bg-slate-900 hover:bg-black text-white font-black text-[10px] uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-slate-900/10"
+           >
+             Volver al Login de Staff
+           </button>
+        </div>
+      </div>
+    );
+  }
 
   // Si hay una llamada activa, mostramos la interfaz de telemedicina
   if (activeCall) {

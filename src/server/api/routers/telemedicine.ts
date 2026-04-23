@@ -6,60 +6,50 @@ import {
 } from "~/server/api/trpc";
 
 export const telemedicineRouter = createTRPCRouter({
-  // Paciente: Unirse a la fila de espera
+  // Paciente: Unirse a la fila de espera (Usando ID de sesión que es infalible)
   joinQueue: protectedProcedure
     .input(z.object({ specialty: z.string() }))
     .mutation(async ({ ctx, input }) => {
       console.log("--- INICIO MUTATION joinQueue ---");
-      console.log("User Session Email:", ctx.session.user.email);
-      console.log("User Session ID:", ctx.session.user.id);
+      const userId = ctx.session.user.id;
       
-      let patient;
+      // 1. Aseguramos perfil de paciente vinculado al usuario
+      const patient = await ctx.db.patient.upsert({
+        where: { userId: userId },
+        update: {},
+        create: {
+            userId: userId,
+            onboardingCompleted: true
+        }
+      });
 
-      try {
-        // Buscamos o creamos el paciente en una sola operación atómica
-        patient = await ctx.db.patient.upsert({
-            where: { userId: ctx.session.user.id },
-            update: {}, // Si existe, no cambiamos nada
-            create: {
-                userId: ctx.session.user.id,
-                onboardingCompleted: true
-            }
-        });
-        console.log("Paciente obtenido/creado:", patient.id);
-      } catch (err: any) {
-        console.error("Error en UPSERT de paciente:", err);
-        // Segundo intento: Buscar por email como fallback absoluto
-        const user = await ctx.db.user.findUnique({ 
-            where: { email: ctx.session.user.email! },
-            include: { patient: true }
-        });
-        patient = user?.patient;
-        if (!patient) throw new Error("No se pudo determinar el perfil de paciente.");
-      }
+      console.log("Paciente ID:", patient.id);
 
-      console.log("Procediendo a crear la llamada para paciente:", patient.id);
-
-      // Cancelar previas
+      // 2. Cancelamos cualquier llamada WAITING previa de este paciente para evitar duplicados
       await ctx.db.telemedicineCall.updateMany({
         where: { patientId: patient.id, status: "WAITING" },
         data: { status: "CANCELLED" },
       });
 
-      // Crear la nueva llamada
+      // 3. Creamos la nueva llamada REAL en la base de datos
       const newCall = await ctx.db.telemedicineCall.create({
         data: {
           patientId: patient.id,
           specialty: input.specialty,
           status: "WAITING",
         },
+        include: {
+            patient: {
+                include: { user: true }
+            }
+        }
       });
 
-      console.log("Llamada creada con éxito:", newCall.id);
+      console.log("Llamada WAITING creada con ID:", newCall.id);
       return newCall;
     }),
 
-  // Paciente: Consultar si su llamada fue aceptada
+  // Paciente: Consultar estado de su llamada
   getActiveCall: protectedProcedure.query(async ({ ctx }) => {
     const patient = await ctx.db.patient.findUnique({
       where: { userId: ctx.session.user.id },
@@ -70,13 +60,16 @@ export const telemedicineRouter = createTRPCRouter({
     return ctx.db.telemedicineCall.findFirst({
       where: { 
         patientId: patient.id, 
-        status: { in: ["WAITING", "IN_PROGRESS"] } 
+        status: { in: ["WAITING", "IN_PROGRESS", "COMPLETED"] } 
+      },
+      include: {
+          patient: { include: { user: true } }
       },
       orderBy: { createdAt: "desc" },
     });
   }),
 
-  // Médico: Ver pacientes en espera
+  // Médico: Ver fila de espera en tiempo real
   getWaitingQueue: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.telemedicineCall.findMany({
       where: { status: "WAITING" },
@@ -91,7 +84,21 @@ export const telemedicineRouter = createTRPCRouter({
     });
   }),
 
-  // Médico: Aceptar un paciente
+  // Médico: Reconexión de llamada activa
+  getDoctorActiveCall: publicProcedure
+    .input(z.object({ doctorName: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.telemedicineCall.findFirst({
+        where: { 
+            doctorId: input.doctorName, 
+            status: "IN_PROGRESS" 
+        },
+        include: { patient: { include: { user: true } } },
+        orderBy: { updatedAt: "desc" },
+      });
+    }),
+
+  // Médico: Aceptar paciente
   acceptCall: publicProcedure
     .input(z.object({ callId: z.string(), doctorName: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -101,14 +108,17 @@ export const telemedicineRouter = createTRPCRouter({
         where: { id: input.callId },
         data: {
           status: "IN_PROGRESS",
-          doctorId: input.doctorName, // Simulamos con el nombre
+          doctorId: input.doctorName,
           roomName,
           startTime: new Date(),
         },
+        include: {
+            patient: { include: { user: true } }
+        }
       });
     }),
 
-  // Finalizar llamada
+  // Finalizar atención
   endCall: publicProcedure
     .input(z.object({ callId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -118,6 +128,35 @@ export const telemedicineRouter = createTRPCRouter({
           status: "COMPLETED",
           endTime: new Date(),
         },
+      });
+    }),
+
+  // Paciente: Guardar encuesta
+  submitSurvey: protectedProcedure
+    .input(z.object({
+      callId: z.string(),
+      attentionRating: z.string(),
+      connectionRating: z.string(),
+      videoRating: z.string(),
+      audioRating: z.string(),
+      comment: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const patient = await ctx.db.patient.findUnique({
+          where: { userId: ctx.session.user.id }
+      });
+      if (!patient) throw new Error("No se encontró el perfil de paciente.");
+
+      return ctx.db.telemedicineSurvey.create({
+        data: {
+          callId: input.callId,
+          patientId: patient.id,
+          attentionRating: input.attentionRating,
+          connectionRating: input.connectionRating,
+          videoRating: input.videoRating,
+          audioRating: input.audioRating,
+          comment: input.comment,
+        }
       });
     }),
 });

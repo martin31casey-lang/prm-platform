@@ -42,11 +42,11 @@ export default function HomePage() {
         </div>
         
         <div className="flex items-center gap-4 lg:gap-6">
-            <Link href="/auth/signin" className="hidden sm:block text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">
+            <Link href="/auth/signin" className="hidden sm:block text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors cursor-pointer">
               Log In
             </Link>
-            <Link href="/auth/signin" className="bg-slate-900 text-white px-6 lg:px-8 py-2.5 lg:py-3.5 rounded-full font-black text-[9px] lg:text-[10px] uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl shadow-slate-900/10 active:scale-95">
-              Acceso
+            <Link href="/auth/signin" className="bg-slate-900 text-white px-6 lg:px-8 py-2.5 lg:py-3.5 rounded-full font-black text-[9px] lg:text-[10px] uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl shadow-slate-900/10 active:scale-95 cursor-pointer">
+              Acceso a Pacientes
             </Link>
         </div>
       </nav>
@@ -74,7 +74,7 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-6 pt-6">
-                <Link href="/auth/signin" className="group bg-slate-900 hover:bg-black text-white px-10 py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] hover:-translate-y-1">
+                <Link href="/auth/signin" className="group bg-slate-900 hover:bg-black text-white px-10 py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] hover:-translate-y-1 cursor-pointer">
                   Acceder al Portal
                   <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>

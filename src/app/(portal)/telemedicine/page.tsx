@@ -37,11 +37,11 @@ export default function TelemedicinePage() {
   });
 
   const router = useRouter();
-  const joinQueue = api.health.joinQueue.useMutation();
-  const endCall = api.health.endCall.useMutation();
-  const submitSurvey = api.health.submitSurvey.useMutation();
+  const joinQueue = api.telemedicine.joinQueue.useMutation();
+  const endCall = api.telemedicine.endCall.useMutation();
+  const submitSurvey = api.telemedicine.submitSurvey.useMutation();
 
-  const { data: activeCall, isLoading: isLoadingCall, refetch: refetchCall } = api.health.getActiveCall.useQuery(undefined, {
+  const { data: activeCall, isLoading: isLoadingCall, refetch: refetchCall } = api.telemedicine.getActiveCall.useQuery(undefined, {
     refetchInterval: 3000, 
   });
 
