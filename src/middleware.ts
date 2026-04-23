@@ -5,10 +5,10 @@ export function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const hostname = req.headers.get("host") || "";
 
-  const rootDomain = "localhost:3000";
+  // 1. SI ES EL DOMINIO CORPORATIVO (VitalPlus / VitalFlow)
+  const isCorporate = hostname.includes("localhost") || hostname.includes("prm-platform.vercel.app");
 
-  // 1. SI ES EL DOMINIO CORPORATIVO (VitalPlus)
-  if (hostname === rootDomain) {
+  if (isCorporate) {
     if (url.pathname === "/") {
       return NextResponse.rewrite(new URL("/landing", req.url));
     }
