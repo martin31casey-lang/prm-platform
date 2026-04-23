@@ -4,7 +4,16 @@ Este documento centraliza la evolución de la plataforma VitalPlus como un ecosi
 
 ---
 
-## 0. Arquitectura de Secciones (Multi-tenant Core)
+## 0. Próximo Paso (Foco Inmediato)
+**Prioridad:** `CRÍTICA` | **Estado:** `Planificando`
+
+- [ ] **Flujo Completo de Staff Auth:** Desarrollo del sistema de login para médicos y personal de salud (RBAC).
+- [ ] **Gestión de Staff (Admin):** Creación de perfiles de staff por parte de administradores para habilitar sus accesos.
+- [ ] **Seguridad de Rutas (Staff):** Middleware para proteger `/staff/*` según roles.
+
+---
+
+## 1. Arquitectura de Secciones (Multi-tenant Core)
 **Estado:** `En Progreso` | **Prioridad:** `Máxima`
 
 - [x] **Sección (corporate):** Landing page institucional, servicios y acceso a clientes (Marketing Site).
@@ -62,5 +71,5 @@ Este documento centraliza la evolución de la plataforma VitalPlus como un ecosi
 - [ ] **Seguridad de Rutas:** Middleware de protección para validar roles antes de acceder a sub-rutas de `/staff`.
 
 ---
-*Documento actualizado el 2026-04-21 para reflejar la visión de Portal de Staff Unificado y Encuestas de Satisfacción*
+*Documento actualizado el 2026-04-23 para priorizar Login de Staff y Gestión de Personal*
 

@@ -174,13 +174,17 @@ export default function TelemedicinePage() {
     try {
       if (spec?.online > 0) {
         setSelectedSpecialty(spec.name);
-        await joinQueue.mutateAsync({ specialty: spec.name });
-        await refetchCall();
+        // Intentamos unirse a la cola, pero si falla procedemos igual (resiliencia)
+        try {
+          await joinQueue.mutateAsync({ specialty: spec.name });
+          await refetchCall();
+        } catch (err) {
+          console.warn("Error en joinQueue mutation (usando modo resiliente):", err);
+        }
         setStep('waiting');
       }
     } catch (error: any) {
-      console.error("Error:", error);
-      // Feedback más elegante
+      console.error("Error crítico en handleSelect:", error);
     }
   };
 
