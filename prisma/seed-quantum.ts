@@ -50,6 +50,21 @@ async function main() {
 
   console.log(`✅ ${updatedCenters.count} sedes vinculadas a Quantum.`);
 
+  // 4. Crear Usuario Médico de Prueba (Test / 1234)
+  const testDoctor = await prisma.user.upsert({
+    where: { username: "Test" },
+    update: {},
+    create: {
+      username: "Test",
+      password: "1234", // En una app real usaríamos hash, pero para esta demo usamos texto plano para coincidir con el config
+      name: "Dr. Test Quantum",
+      role: "DOCTOR",
+      institutionId: quantum.id,
+    },
+  });
+
+  console.log(`✅ Usuario médico creado: ${testDoctor.username}`);
+
   console.log("✨ Seed completado con éxito.");
 }
 
