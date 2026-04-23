@@ -64,7 +64,6 @@ export default function TelemedicinePage() {
     try {
         await submitSurvey.mutateAsync({
             callId: lastCallId,
-            patientId: activeCall.patientId,
             attentionRating: ratings.attention || 'happy',
             connectionRating: ratings.connection || 'happy',
             videoRating: ratings.video || 'happy',
