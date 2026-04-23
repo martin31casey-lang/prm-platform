@@ -184,7 +184,10 @@ export default function TelemedicinePage() {
     }
   };
 
-  if (isLoadingCall) {
+  // Solo mostramos el spinner de carga en la carga inicial real, no en los refetches automáticos
+  const isInitialLoading = isLoadingCall && !activeCall;
+
+  if (isInitialLoading) {
     return (
       <div className="flex flex-col h-[60vh] items-center justify-center space-y-4">
         <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
