@@ -1,5 +1,5 @@
-import { IHISAdapter } from "./adapter.interface";
-import { 
+import type { IHISAdapter } from "./adapter.interface";
+import type { 
     UniversalAppointment, 
     UniversalMedicalStudy, 
     UniversalProfessional 
