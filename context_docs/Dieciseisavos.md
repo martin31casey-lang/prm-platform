@@ -1,0 +1,9 @@
+Los emparejamientos para los Dieciseisavos de Final se determinan mediante un esquema que combina posiciones fijas en los grupos y variables condicionales, diseñado para acomodar el nuevo formato de 48 equipos.
+
+El sistema funciona de la siguiente manera:
+
+*   **Los Clasificados:** Avanzan a esta ronda los **dos primeros lugares** de cada uno de los 12 grupos, sumados a los **ocho mejores terceros lugares** de la tabla general, completando así los 32 equipos.
+*   **Cuadro Preestablecido con Variables:** Aunque el calendario de partidos (fixture) ya tiene las llaves definidas por fechas y sedes, los cruces específicos contienen "variables condicionales". Esto significa que, mientras algunos enfrentamientos pueden ser directos (por ejemplo, segundos lugares contra segundos lugares, aunque la fuente no especifica este cruce exacto, sí menciona la lógica de posiciones), los cruces que involucran a los ganadores de grupo dependen de la combinación final de los terceros lugares.
+*   **Definición de Rivales:** Debido a que no se sabe de antemano de qué grupos provendrán los ocho mejores terceros, el sistema ajusta los rivales dinámicamente. Por ejemplo, se establece que el **ganador del Grupo A** jugará contra el tercer lugar proveniente de los grupos C, E, F, H o I. El rival exacto se confirmará una vez finalizada la fase de grupos y se sepa qué terceros han clasificado.
+
+Esta ronda de 32 equipos es una novedad absoluta en la historia de los mundiales masculinos y reduce drásticamente el margen de error, ya que los equipos entran a fase de "muerte súbita" tras solo tres partidos disputados.

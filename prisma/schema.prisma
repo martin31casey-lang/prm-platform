@@ -1,0 +1,318 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    // output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+    // Further reading:
+    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+    url      = env("DATABASE_URL")
+}
+
+model Institution {
+    id            String    @id @default(cuid())
+    name          String
+    slug          String    @unique // Para la URL interna
+    customDomain  String?   @unique // Ej: quantuminstitucionsalud.com.ar
+    logoUrl       String?
+    primaryColor  String    @default("#4f46e5")
+    secondaryColor String   @default("#0f172a")
+    welcomeMessage String?
+    
+    medicalCenters MedicalCenter[]
+    patients      Patient[]
+    users         User[]
+    telemedicineCalls TelemedicineCall[]
+    news          News[]
+    
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+
+    @@map("institutions")
+}
+
+model Patient {
+    id           String   @id @default(cuid())
+    userId       String   @unique
+    institutionId String?
+    dni          String?  
+    passport     String?  
+    gender       String?
+    birthDate    DateTime?
+    phoneNumber  String?
+    
+    // Dirección
+    address      String?
+    city         String?
+    postalCode   String?
+    
+    // Datos de Salud / Cobertura
+    insuranceProviderId String?
+    insurancePlanId     String?
+    membershipNumber    String?
+    onboardingCompleted Boolean @default(false)
+    
+    hisId        String?  
+    
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    institution  Institution? @relation(fields: [institutionId], references: [id])
+    insurance    InsuranceProvider? @relation(fields: [insuranceProviderId], references: [id])
+    plan         InsurancePlan?     @relation(fields: [insurancePlanId], references: [id])
+    
+    appointments Appointment[]
+    studies      MedicalStudy[]
+    favoriteCenters FavoriteCenter[]
+    telemedicineCalls TelemedicineCall[]
+    telemedicineSurveys TelemedicineSurvey[]
+
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    @@unique([dni, institutionId])
+    @@map("patients")
+}
+
+model MedicalCenter {
+    id            String   @id @default(cuid())
+    institutionId String?
+    name          String   
+    address       String
+    phone         String
+    type          String   // Alta Complejidad, Consultorios, etc.
+    image         String?
+    guardTime     String?  // Ej: "15 min"
+    status        String?  @default("normal") // normal, busy, critical
+    link          String?  // Google Maps link
+    
+    institution   Institution? @relation(fields: [institutionId], references: [id])
+    favoritedBy FavoriteCenter[]
+    appointments Appointment[]
+
+    @@map("medical_centers")
+}
+
+model FavoriteCenter {
+    patientId   String
+    centerId    String
+    visitCount  Int      @default(0) // Para "centros frecuentes" automáticos
+    isFavorite  Boolean  @default(false)
+    
+    patient     Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+    center      MedicalCenter @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+    @@id([patientId, centerId])
+    @@map("favorite_centers")
+}
+
+model InsuranceProvider {
+    id          String   @id @default(cuid())
+    name        String   @unique
+    code        String?  @unique // Código nacional de prestador
+    logoUrl     String?
+    plans       InsurancePlan[]
+    patients    Patient[]
+
+    @@map("insurance_providers")
+}
+
+model InsurancePlan {
+    id                  String            @id @default(cuid())
+    insuranceProviderId String
+    name                String            // Ej: 210, 410, Classic, Oro
+    insurance           InsuranceProvider @relation(fields: [insuranceProviderId], references: [id], onDelete: Cascade)
+    patients            Patient[]
+
+    @@map("insurance_plans")
+}
+
+
+model Appointment {
+    id          String            @id @default(cuid())
+    patientId   String
+    centerId    String?
+    date        DateTime
+    status      AppointmentStatus @default(PENDING)
+    doctorName  String?
+    specialty   String?
+    reason      String?
+    hisRef      String?           // Referencia al ID de turno en el HIS
+
+    patient     Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+    center      MedicalCenter?    @relation(fields: [centerId], references: [id])
+    
+    createdAt   DateTime          @default(now())
+    updatedAt   DateTime          @updatedAt
+
+    @@map("appointments")
+}
+
+model MedicalStudy {
+    id          String      @id @default(cuid())
+    patientId   String
+    title       String
+    category    String      // Lab, Imagen, etc.
+    status      StudyStatus @default(FINAL)
+    reportUrl   String?     // Link a PDF o visualizador
+    imagingUrl  String?     // Link a visor DICOM si aplica
+
+    patient     Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+
+    @@map("medical_studies")
+}
+
+enum AppointmentStatus {
+    PENDING
+    CONFIRMED
+    CANCELLED
+    COMPLETED
+}
+
+enum StudyStatus {
+    PRELIMINARY
+    FINAL
+    CORRECTED
+}
+
+// Necessary for Next auth
+model Account {
+    id                       String  @id @default(cuid())
+    userId                   String
+    type                     String
+    provider                 String
+    providerAccountId        String
+    refresh_token            String? // @db.Text
+    access_token             String? // @db.Text
+    expires_at               Int?
+    token_type               String?
+    scope                    String?
+    id_token                 String? // @db.Text
+    session_state            String?
+    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    refresh_token_expires_in Int?
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+    id            String    @id @default(cuid())
+    institutionId String?
+    role          UserRole  @default(PATIENT)
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    
+    institution   Institution? @relation(fields: [institutionId], references: [id])
+    accounts      Account[]
+    sessions      Session[]
+    patient       Patient?
+}
+
+model News {
+    id            String    @id @default(cuid())
+    institutionId String
+    title         String
+    content       String    @db.Text
+    imageUrl      String?
+    status        NewsStatus @default(DRAFT)
+    
+    authorId      String?
+    verifierId    String?
+    publisherId   String?
+    
+    institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+    
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+
+    @@map("news")
+}
+
+enum NewsStatus {
+    DRAFT
+    APPROVED
+    ACTIVE
+}
+
+enum UserRole {
+    ADMIN
+    DOCTOR
+    STAFF
+    PATIENT
+    CONTENT_CREATOR
+    NEWS_VERIFIER
+    NEWS_PUBLISHER
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
+
+
+model TelemedicineCall {
+    id            String    @id @default(cuid())
+    institutionId String?
+    patientId     String
+    doctorId      String?
+    specialty     String
+    status        CallStatus @default(WAITING)
+    roomName      String?    // Nombre de la sala de Jitsi (ej: quantum-call-xyz)
+    startTime     DateTime?
+    endTime       DateTime?
+    
+    institution   Institution? @relation(fields: [institutionId], references: [id])
+    patient       Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+    survey        TelemedicineSurvey?
+    
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+
+    @@map("telemedicine_calls")
+}
+
+model TelemedicineSurvey {
+    id            String    @id @default(cuid())
+    callId        String    @unique
+    patientId     String
+    
+    attentionRating  String // "sad", "neutral", "happy"
+    connectionRating String
+    videoRating      String
+    audioRating      String
+    
+    comment       String?   @db.Text
+    
+    call          TelemedicineCall @relation(fields: [callId], references: [id], onDelete: Cascade)
+    patient       Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+    createdAt     DateTime  @default(now())
+
+    @@map("telemedicine_surveys")
+}
+
+enum CallStatus {
+    WAITING
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
