@@ -92,30 +92,37 @@ export const patientRouter = createTRPCRouter({
 
   // Obtener centros frecuentes o favoritos
   getFrequentCenters: protectedProcedure.query(async ({ ctx }) => {
-    const patient = await ctx.db.patient.findUnique({
-      where: { userId: ctx.session.user.id },
-      include: {
-        favoriteCenters: {
-          include: { center: true },
-          orderBy: [
-            { isFavorite: "desc" },
-            { visitCount: "desc" }
-          ],
-          take: 3
-        }
-      }
-    });
+    const userId = ctx.session?.user?.id;
+    if (!userId) return [];
 
-    if (!patient || patient.favoriteCenters.length === 0) {
-      // Si no tiene favoritos, devolvemos los centros generales por ahora (simulado)
+    try {
+      const patient = await ctx.db.patient.findUnique({
+        where: { userId },
+        include: {
+          favoriteCenters: {
+            include: { center: true },
+            orderBy: [
+              { isFavorite: "desc" },
+              { visitCount: "desc" }
+            ],
+            take: 3
+          }
+        }
+      });
+  
+      if (!patient || patient.favoriteCenters.length === 0) {
+        return [];
+      }
+  
+      return patient.favoriteCenters.map(fc => ({
+        ...fc.center,
+        isFavorite: fc.isFavorite,
+        visitCount: fc.visitCount
+      }));
+    } catch (error) {
+      console.error("Error in getFrequentCenters:", error);
       return [];
     }
-
-    return patient.favoriteCenters.map(fc => ({
-      ...fc.center,
-      isFavorite: fc.isFavorite,
-      visitCount: fc.visitCount
-    }));
   }),
 
   // Marcar un centro como favorito

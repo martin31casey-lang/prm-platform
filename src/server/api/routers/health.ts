@@ -87,20 +87,28 @@ export const healthRouter = createTRPCRouter({
     }),
 
   getActiveCall: protectedProcedure.query(async ({ ctx }) => {
-    const userEmail = ctx.session.user.email;
+    const userEmail = ctx.session?.user?.email;
     if (!userEmail) return null;
 
-    const user = await db.user.findUnique({
-        where: { email: userEmail },
-        include: { patient: true }
-    });
-    
-    if (!user?.patient) return null;
+    try {
+      const user = await db.user.findUnique({
+          where: { email: userEmail },
+          include: { patient: true }
+      });
+      
+      if (!user?.patient) return null;
 
-    return db.telemedicineCall.findFirst({
-      where: { patientId: user.patient.id, status: { in: ["WAITING", "IN_PROGRESS", "COMPLETED"] } },
-      orderBy: { createdAt: "desc" },
-    });
+      return db.telemedicineCall.findFirst({
+        where: { 
+          patientId: user.patient.id, 
+          status: { in: ["WAITING", "IN_PROGRESS", "COMPLETED"] } 
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch (error) {
+      console.error("Error in getActiveCall:", error);
+      return null;
+    }
   }),
 
   // Médico: Ver pacientes en espera

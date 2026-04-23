@@ -184,17 +184,9 @@ export default function TelemedicinePage() {
     }
   };
 
-  // Solo mostramos el spinner de carga en la carga inicial real, no en los refetches automáticos
+  // Ya no bloqueamos la UI con un spinner a pantalla completa.
+  // Solo lo usamos como flag para indicadores sutiles si fuera necesario.
   const isInitialLoading = isLoadingCall && !activeCall;
-
-  if (isInitialLoading) {
-    return (
-      <div className="flex flex-col h-[60vh] items-center justify-center space-y-4">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Sincronizando...</p>
-      </div>
-    );
-  }
 
 
   const handleEndCall = async () => {
@@ -239,7 +231,9 @@ export default function TelemedicinePage() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="h-1 w-8 bg-indigo-600"></div>
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600">Atención Inmediata</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600">
+                Atención Inmediata {isLoadingCall && <span className="ml-2 lowercase italic opacity-50">(sincronizando...)</span>}
+              </span>
             </div>
             <h1 className="text-4xl font-bold text-slate-900 tracking-tight font-outfit uppercase">Guardia Virtual</h1>
             <p className="text-slate-500 mt-1 font-medium">Selecciona una especialidad para entrar a la sala de espera.</p>
