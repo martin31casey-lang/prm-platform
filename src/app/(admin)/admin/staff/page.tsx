@@ -75,7 +75,7 @@ export default function StaffManagementPage() {
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-3">
                        <div className="h-10 w-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold">
-                          {staff.name.split(' ')[1].charAt(0)}
+                          {staff.name.split(' ')[1]?.charAt(0) ?? staff.name.charAt(0)}
                        </div>
                        <div>
                           <div className="text-sm font-bold text-slate-900">{staff.name}</div>
