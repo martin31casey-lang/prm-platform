@@ -6,7 +6,11 @@ export function middleware(req: NextRequest) {
   const hostname = req.headers.get("host") || "";
 
   // 1. SI ES EL DOMINIO CORPORATIVO (VitalPlus / VitalFlow)
-  const isCorporate = hostname.includes("localhost") || hostname.includes("prm-platform.vercel.app");
+  // Verificamos si es localhost o nuestro dominio principal de Vercel
+  const isCorporate = 
+    hostname.includes("localhost") || 
+    hostname === "prm-platform.vercel.app" ||
+    hostname.endsWith(".vercel.app"); // Catch-all para subdominios de preview
 
   if (isCorporate) {
     if (url.pathname === "/") {

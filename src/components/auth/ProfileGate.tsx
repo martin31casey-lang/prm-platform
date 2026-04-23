@@ -25,6 +25,8 @@ export function ProfileGate({ children }: { children: React.ReactNode }) {
     // Rutas que no deben ser procesadas por la lógica de pacientes (públicas, staff o admin)
     const isExcludedRoute = 
         pathname === "/" || 
+        pathname === "/landing" ||
+        pathname === "/quantum-home" ||
         pathname.startsWith("/auth") || 
         pathname.startsWith("/staff") || 
         pathname.startsWith("/admin");
