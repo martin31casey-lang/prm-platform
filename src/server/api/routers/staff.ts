@@ -24,19 +24,25 @@ export const staffRouter = createTRPCRouter({
       username: z.string().min(3),
       password: z.string().min(4),
     }))
-    .mutation(async ({ input }) => {
-      // 1. Crear el usuario con rol DOCTOR
-      const user = await db.user.create({
+    .mutation(async ({ ctx, input }) => {
+      // 1. Buscamos la institución Quantum para vincular al profesional
+      const institution = await ctx.db.institution.findUnique({
+        where: { slug: "quantum" }
+      });
+
+      // 2. Crear el usuario con rol DOCTOR
+      const user = await ctx.db.user.create({
         data: {
           name: `${input.firstName} ${input.lastName}`,
           username: input.username,
-          password: input.password, // En prod usaríamos bcrypt, aquí guardamos simple para la demo
+          password: input.password,
           role: "DOCTOR",
+          institutionId: institution?.id, // Lo vinculamos a Quantum
         }
       });
 
-      // 2. Crear el perfil profesional
-      return await db.professional.create({
+      // 3. Crear el perfil profesional
+      return await ctx.db.professional.create({
         data: {
           userId: user.id,
           licenseNumber: input.licenseNumber,
