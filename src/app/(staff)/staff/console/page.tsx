@@ -166,7 +166,7 @@ export default function StaffConsolePage() {
           <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pacientes en Espera ({queue?.length || 0})</h3>
-                <button onClick={() => refetch()} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Refrescar</button>
+                <button onClick={() => refetchQueue()} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Refrescar</button>
               </div>
               
               {queue?.length === 0 ? (
