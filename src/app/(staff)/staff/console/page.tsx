@@ -115,7 +115,7 @@ export default function StaffConsolePage() {
 
   if (status === "loading") return <div className="p-10 text-center font-black uppercase tracking-widest text-slate-400">Verificando Credenciales...</div>;
 
-  if (session && session.user.role !== "DOCTOR" && session.user.role !== "ADMIN") {
+  if (session && (session.user as any).role !== "DOCTOR" && (session.user as any).role !== "ADMIN") {
     return (
       <div className="min-h-[80vh] flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl shadow-slate-200 border border-slate-100 p-12 text-center animate-in fade-in zoom-in duration-500">
