@@ -55,7 +55,7 @@ export default function AdminLayout({
       <main className="flex-1 ml-64">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
           <div className="text-xs font-black text-slate-400 uppercase tracking-widest">
-            Bienvenido, Admin Sanatorio Central
+            Bienvenido, Admin Institucional
           </div>
           <div className="flex items-center gap-4">
             <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">

@@ -8,8 +8,8 @@ import { AuthProvider } from "~/components/providers/AuthProvider";
 import { ProfileGate } from "~/components/auth/ProfileGate";
 
 export const metadata: Metadata = {
-  title: "Quantum Portal | Sanatorio Quantum Medical",
-  description: "Plataforma integral de gestión de salud para pacientes.",
+  title: "VitalPlus Health | Plataforma de Gestión de Salud",
+  description: "Ecosistema integral de salud digital.",
   icons: [
     { rel: "icon", url: "/favicon.ico" },
     { rel: "apple-touch-icon", url: "/icons/apple-touch-icon.png" }
