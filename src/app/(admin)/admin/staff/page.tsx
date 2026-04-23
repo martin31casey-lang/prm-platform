@@ -29,10 +29,18 @@ export default function StaffManagementPage() {
       utils.staff.list.invalidate();
       setShowAddModal(false);
       setIsCreating(false);
+      alert("✅ Profesional creado con éxito");
+    },
+    onError: (err) => {
+      setIsCreating(false);
+      alert("❌ Error al crear: " + err.message);
     }
   });
   const deleteStaff = api.staff.delete.useMutation({
-    onSuccess: () => utils.staff.list.invalidate()
+    onSuccess: () => {
+      utils.staff.list.invalidate();
+      alert("🗑️ Profesional eliminado");
+    }
   });
 
   const [formData, setFormData] = useState({
