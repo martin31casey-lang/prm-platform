@@ -5,23 +5,20 @@ export function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const hostname = req.headers.get("host") || "";
 
-  // 1. SI ES EL DOMINIO CORPORATIVO (VitalPlus / VitalFlow)
-  // Verificamos si es localhost o nuestro dominio principal de Vercel
+  // 1. DOMINIO CORPORATIVO (VitalFlow)
   const isCorporate = 
     hostname.includes("localhost") || 
     hostname === "prm-platform.vercel.app" ||
-    hostname.endsWith(".vercel.app"); // Catch-all para subdominios de preview
+    hostname.endsWith(".vercel.app");
 
   if (isCorporate) {
-    if (url.pathname === "/") {
-      return NextResponse.rewrite(new URL("/landing", req.url));
-    }
+    // Ya no reescribimos / a /landing porque VitalFlow vive en el / real.
     return NextResponse.next();
   }
 
-  // 2. SI ES UN DOMINIO DE CLIENTE (Quantum, etc.)
+  // 2. DOMINIO DE INSTITUCIÓN (Tenant)
   if (url.pathname === "/") {
-    // Redirigir a la landing LIMPIA de la institución
+    // Si entran por un dominio de cliente, les mostramos Quantum
     return NextResponse.rewrite(new URL("/quantum-home", req.url));
   }
 
