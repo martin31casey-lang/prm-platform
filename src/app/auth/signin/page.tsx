@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { HeartPulse, Chrome, ArrowLeft, ShieldCheck, Lock } from "lucide-react";
+import { HeartPulse, ArrowLeft, ShieldCheck, Lock } from "lucide-react";
 import Link from "next/link";
 
 export default function SignInPage() {
