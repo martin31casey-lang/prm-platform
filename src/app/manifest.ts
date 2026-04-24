@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Sanatorio Quantum Medical Portal',
     short_name: 'Quantum Portal',
     description: 'Portal de Autogestión del Paciente - Sanatorio Quantum Medical',
-    start_url: '/',
+    start_url: '/dashboard',
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#0f172a',
