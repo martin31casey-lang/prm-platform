@@ -131,6 +131,18 @@ export const telemedicineRouter = createTRPCRouter({
       });
     }),
 
+  // Paciente: Cancelar y salir de la fila
+  cancelCall: protectedProcedure
+    .input(z.object({ callId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.telemedicineCall.update({
+        where: { id: input.callId },
+        data: {
+          status: "CANCELLED",
+        },
+      });
+    }),
+
   // Paciente: Guardar encuesta
   submitSurvey: protectedProcedure
     .input(z.object({

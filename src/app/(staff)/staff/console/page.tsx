@@ -20,7 +20,7 @@ export default function StaffConsolePage() {
   const doctorName = session?.user?.name || "Médico";
 
   const { data: queue, refetch: refetchQueue } = api.telemedicine.getWaitingQueue.useQuery(undefined, {
-    refetchInterval: 5000, 
+    refetchInterval: 3000, 
   });
 
   // Query para ver si el médico tiene una llamada colgada/activa

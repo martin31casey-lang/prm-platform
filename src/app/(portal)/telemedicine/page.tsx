@@ -39,6 +39,7 @@ export default function TelemedicinePage() {
   const router = useRouter();
   const joinQueue = api.telemedicine.joinQueue.useMutation();
   const endCall = api.telemedicine.endCall.useMutation();
+  const cancelCall = api.telemedicine.cancelCall.useMutation();
   const submitSurvey = api.telemedicine.submitSurvey.useMutation();
 
   const { data: activeCall, isLoading: isLoadingCall, refetch: refetchCall } = api.telemedicine.getActiveCall.useQuery(undefined, {
@@ -47,8 +48,11 @@ export default function TelemedicinePage() {
 
   // Efecto para detectar cuando la llamada termina y mostrar la encuesta
   useEffect(() => {
-    // Solo mostramos la encuesta si el estado es COMPLETED y no la hemos mostrado aún para esta llamada
-    if (activeCall?.status === 'COMPLETED' && !showSurvey && lastCallId !== activeCall.id) {
+    if (activeCall?.status === 'COMPLETED' && !showSurvey) {
+        // Usamos localStorage para no repetir la encuesta de una misma llamada al recargar
+        const surveyedCalls = JSON.parse(localStorage.getItem('surveyed_calls') || '[]');
+        if (surveyedCalls.includes(activeCall.id)) return;
+
         // Solo si la llamada terminó hace menos de 2 minutos (para evitar encuestas viejas)
         const endTime = activeCall.updatedAt ? new Date(activeCall.updatedAt).getTime() : 0;
         if (Date.now() - endTime < 120000) {
@@ -56,7 +60,16 @@ export default function TelemedicinePage() {
             setShowSurvey(true);
         }
     }
-  }, [activeCall, showSurvey, lastCallId]);
+  }, [activeCall, showSurvey]);
+
+  const handleCancel = async () => {
+    if (activeCall?.id) {
+        await cancelCall.mutateAsync({ callId: activeCall.id });
+    }
+    setStep('selection');
+    setSelectedSpecialty(null);
+    await refetchCall();
+  };
 
   const handleSubmitSurvey = async () => {
     if (!lastCallId || !activeCall?.patientId) return;
@@ -69,6 +82,12 @@ export default function TelemedicinePage() {
             videoRating: ratings.video || 'happy',
             audioRating: ratings.audio || 'happy',
         });
+        
+        // Marcamos como encuesta completada en este navegador
+        const surveyedCalls = JSON.parse(localStorage.getItem('surveyed_calls') || '[]');
+        surveyedCalls.push(lastCallId);
+        localStorage.setItem('surveyed_calls', JSON.stringify(surveyedCalls));
+        
     } catch (error) {
         console.error("Error saving survey:", error);
     }
@@ -306,7 +325,7 @@ export default function TelemedicinePage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <button onClick={() => setStep('selection')} className="hover:text-indigo-600 transition-colors">
+            <button onClick={handleCancel} className="hover:text-indigo-600 transition-colors">
                 <ChevronLeft className="w-4 h-4" />
             </button>
             <div className="h-1 w-8 bg-indigo-600"></div>
@@ -316,7 +335,7 @@ export default function TelemedicinePage() {
           <div className="flex items-center gap-4 mt-2">
             <p className="text-slate-500 font-medium">Un médico se conectará en breve para atenderte.</p>
             <button 
-                onClick={() => setStep('selection')}
+                onClick={handleCancel}
                 className="text-[10px] font-black text-red-600 uppercase tracking-widest hover:underline"
             >
                 Cancelar y Volver
