@@ -31,6 +31,7 @@ export default function StaffConsolePage() {
 
   const acceptCall = api.telemedicine.acceptCall.useMutation();
   const endCall = api.telemedicine.endCall.useMutation();
+  const joinQueue = api.telemedicine.joinQueue.useMutation();
   
   const [activeCall, setActiveCall] = useState<any>(null);
   const [jitsiLoaded, setJitsiLoaded] = useState(false);
@@ -201,7 +202,7 @@ export default function StaffConsolePage() {
                     <button 
                         onClick={async () => {
                             try {
-                                await api.telemedicine.joinQueue.mutateAsync({ specialty: "Clínica Médica" });
+                                await joinQueue.mutateAsync({ specialty: "Clínica Médica" });
                                 alert("✅ Paciente simulado en la fila");
                                 refetchQueue();
                             } catch (e) {
