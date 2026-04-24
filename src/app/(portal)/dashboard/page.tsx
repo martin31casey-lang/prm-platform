@@ -51,24 +51,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Notificaciones de Usuario / Estado Onboarding */}
-      {!patient?.onboardingCompleted && (
-        <div className="soft-card bg-slate-900 p-6 border-none text-white relative overflow-hidden">
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-xl font-bold mb-1">Completa tu legajo digital</h3>
-              <p className="text-slate-400 text-sm italic">Habilitarás el acceso a resultados y recetas automáticas.</p>
-            </div>
-            <Link 
-              href="/onboarding" 
-              className="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition-all text-sm uppercase tracking-wider"
-            >
-              Completar Perfil
-            </Link>
-          </div>
-          <div className="absolute right-0 top-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-        </div>
-      )}
+      {/* Banner de Bienvenida (Opcional: puedes agregar avisos generales aquí) */}
 
 
       {/* Sección: MIS CENTROS FRECUENTES (Personalización por Paciente) */}

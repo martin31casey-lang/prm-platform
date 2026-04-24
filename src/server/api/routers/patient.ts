@@ -25,9 +25,13 @@ export const patientRouter = createTRPCRouter({
           include: { insurance: true, plan: true }
         });
 
-        if (!patient) {
-          patient = await ctx.db.patient.create({
-            data: { userId: ctx.session.user.id, onboardingCompleted: false },
+        // AUTO-ONBOARD: Si el paciente es nuevo o no completó los datos, lo marcamos como listo.
+        // Esto permite que el flujo desde Google sea directo al Dashboard.
+        if (!patient || !patient.onboardingCompleted) {
+          patient = await ctx.db.patient.upsert({
+            where: { userId: ctx.session.user.id },
+            update: { onboardingCompleted: true },
+            create: { userId: ctx.session.user.id, onboardingCompleted: true },
             include: { insurance: true, plan: true }
           });
         }
