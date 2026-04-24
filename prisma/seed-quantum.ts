@@ -65,6 +65,21 @@ async function main() {
 
   console.log(`✅ Usuario médico creado: ${testDoctor.username}`);
 
+  // 5. Crear Usuario Paciente de Prueba (Paciente / 1234)
+  const testPatient = await prisma.user.upsert({
+    where: { username: "Paciente" },
+    update: {},
+    create: {
+      username: "Paciente",
+      password: "1234",
+      name: "Paciente de Prueba",
+      role: "PATIENT",
+      institutionId: quantum.id,
+    },
+  });
+
+  console.log(`✅ Usuario paciente creado: ${testPatient.username}`);
+
   console.log("✨ Seed completado con éxito.");
 }
 
